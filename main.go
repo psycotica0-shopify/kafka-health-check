@@ -18,7 +18,7 @@ func main() {
 	brokerUpdates, clusterUpdates := make(chan check.Update, 2), make(chan check.Update, 2)
 	go healthCheck.ServeHealth(brokerUpdates, clusterUpdates, stop)
 	healthCheck.CheckHealth(brokerUpdates, clusterUpdates, stop)
-	awaitCheck.Done()
+	awaitCheck.Wait()
 }
 
 func addShutdownHook() (chan struct{}, *sync.WaitGroup) {
@@ -30,10 +30,9 @@ func addShutdownHook() (chan struct{}, *sync.WaitGroup) {
 	signal.Notify(shutdown, os.Interrupt)
 	signal.Notify(shutdown, syscall.SIGTERM)
 	go func() {
-		for range shutdown {
-			close(stop)
-			awaitCheck.Wait()
-		}
+		<-shutdown
+		close(stop)
+		awaitCheck.Done()
 	}()
 
 	return stop, awaitCheck
