@@ -60,7 +60,7 @@ func (check *HealthCheck) CheckHealth(brokerUpdates chan<- Update, clusterUpdate
 	if err != nil {
 		return
 	}
-	defer check.closeConnection(manageTopic)
+	defer check.closeConnection(false) //manageTopic)
 
 	reportUnhealthy := func(err error) {
 		log.Println("metadata could not be retrieved, assuming broker unhealthy:", err)
